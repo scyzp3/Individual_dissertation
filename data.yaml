@@ -1,4 +1,4 @@
 train: train/images
-val: train/images
+val: test/images
 nc: 5  # 类别数量
 names: ['vehicle', 'traffic_light', 'traffic_sign', 'bike', 'motobike']  # 类别名称
