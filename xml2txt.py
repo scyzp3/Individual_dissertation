@@ -2,9 +2,12 @@ import os
 import xml.etree.ElementTree as ET
 
 # 输入和输出路径
-input_dir = "ISS-Dataset/labels/test"  # 替换为 VOC XML 文件夹路径
-output_dir = "ISS-Dataset/labels_txt/test"  # 替换为 YOLO 标签保存路径
-image_dir = "ISS-Dataset/images/test"  # 图片文件夹路径，用于验证 XML 对应的图片是否存在
+# input_dir = "ISS-Dataset/labels/images"  # 替换为 VOC XML 文件夹路径
+# output_dir = "ISS-Dataset/labels_txt/images"  # 替换为 YOLO 标签保存路径
+# image_dir = "ISS-Dataset/images/images"  # 图片文件夹路径，用于验证 XML 对应的图片是否存在
+input_dir = "ISS-Dataset/labels/train"  # 替换为 VOC XML 文件夹路径
+output_dir = "datasets/train/labels"  # 替换为 YOLO 标签保存路径
+image_dir = "datasets/train/images"  # 图片文件夹路径，用于验证 XML 对应的图片是否存在
 
 # 创建输出目录
 if not os.path.exists(output_dir):
