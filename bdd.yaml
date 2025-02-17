@@ -1,0 +1,27 @@
+# dataset.yaml
+train: bdd100k/train/images
+val: bdd100k/val/images
+
+# 图片的尺寸
+image_size: 1280  # 根据你数据集的分辨率
+
+# 类别名称
+names:
+  0: car
+  1: truck
+  2: bus
+  3: person
+  4: bicycle
+  5: motorcycle
+  6: traffic light
+  7: traffic sign
+  8: vegetation
+  9: sky
+  10: building
+  11: road
+  12: sidewalk
+  13: fence
+  14: lane marker
+  15: pedestrian
+  16: animal
+  17: obstacle
