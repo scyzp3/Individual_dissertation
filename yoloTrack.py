@@ -1,9 +1,9 @@
 from ultralytics import YOLO
 import cv2
 
-model = YOLO("runs/train/exp5/weights/best.pt")
+model = YOLO("runs/train/exp10/weights/best.pt")
 
-video_path = "datasets/bdd100k_videos_train_00/bdd100k/videos/train/00ad8a92-c4851839.mov"
+video_path = "test4.mp4"
 cap = cv2.VideoCapture(video_path)
 
 fps = int(cap.get(cv2.CAP_PROP_FPS))

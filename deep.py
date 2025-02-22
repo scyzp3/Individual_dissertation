@@ -1,85 +1,77 @@
 import cv2
+import numpy as np
 from ultralytics import YOLO
 from deep_sort_realtime.deepsort_tracker import DeepSort
-import numpy as np
 
-# 1) Load YOLO model
-model = YOLO("runs/train/exp5/weights/best.pt")  # Specify your YOLO weights (local path or from the model hub)
+# 1️⃣ 加载 YOLO 模型
+model = YOLO("runs/train/exp_optimized5/weights/best.pt")  # 你的YOLO模型路径
 
-# 2) Initialize DeepSORT tracker
+# 2️⃣ 初始化 DeepSORT 跟踪器（优化参数）
 tracker = DeepSort(
-    max_age=100,
-    n_init=10,
-    nn_budget=100,
-    max_cosine_distance=0.2,   # ReID embedding distance threshold
-    embedder="mobilenet",      # Default embedder model (can be changed)
-    embedder_gpu=True,         # Use GPU for embedding
+    max_cosine_distance=0.5,  # 允许更大相似度，减少重复计数
+    nn_budget=200,            # 允许更大的 ReID 模型
+    max_age=50,               # 允许目标消失 50 帧后仍恢复 ID
+    n_init=5,                 # 需要 5 帧连续检测后确认目标（减少误检）
+    embedder="mobilenet",     # 使用 MobileNet 作为特征提取器
+    embedder_gpu=True         # 启用 GPU 加速
 )
 
-# 3) Load the video file
-video_path = "datasets/bdd100k_videos_train_00/bdd100k/videos/train/00a0f008-3c67908e.mov"
+# 3️⃣ 读取视频文件
+video_path = "test4.mp4"
 cap = cv2.VideoCapture(video_path)
 
-# 4) Prepare output video writer
-fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-fps = cap.get(cv2.CAP_PROP_FPS)
+# 4️⃣ 初始化视频写入
+fps = int(cap.get(cv2.CAP_PROP_FPS))
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-out_path = "output_video.mp4"
-out = cv2.VideoWriter(out_path, fourcc, fps, (width, height))
 
-# 5) Convert YOLO detections to a format compatible with DeepSORT
-def yolo_to_detections(boxes):
-    """
-    Convert YOLO detections to DeepSORT-compatible format:
-    [([x, y, w, h], confidence, class)] (list of tuples)
-    """
+out = cv2.VideoWriter("output2.mp4", cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
+
+# 5️⃣ YOLO 检测转换为 DeepSORT 格式
+def yolo_to_detections(results):
     detections = []
-    for box in boxes:
-        cls_id = int(box.cls[0])    # YOLO class ID
-        conf = float(box.conf[0])   # Confidence score
-        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-
-        # Only track 'person' class (class 0 in COCO dataset)
-        if cls_id == 0:
+    for result in results:
+        for box in result.boxes:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])  # 目标框坐标
             w, h = x2 - x1, y2 - y1
-            bbox = [x1, y1, w, h]   # Format: [x, y, w, h]
-            detections.append((bbox, conf, cls_id))
+            conf = box.conf[0].item()  # 置信度
+            cls = int(box.cls[0])  # 类别索引
+
+            if conf > 0.4:  # 只跟踪置信度 > 0.4 的目标
+                detections.append(([x1, y1, w, h], conf, cls))
+
     return detections
 
-# 6) Main loop: read and process each frame
-while True:
+# 6️⃣ 逐帧处理视频
+while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
-    # (a) Detect objects with YOLO
-    results = model.predict(frame, conf=0.5)
-    boxes = results[0].boxes
+    # 🟢 (a) 运行 YOLO 检测
+    results = model.predict(frame, conf=0.4)  # 置信度阈值提高到 0.4
+    dets_list = yolo_to_detections(results)
 
-    # (b) Convert YOLO detections to DeepSORT format
-    dets_list = yolo_to_detections(boxes)
+    # 🔵 (b) 更新 DeepSORT 目标跟踪
+    tracks = tracker.update_tracks(dets_list, frame=frame) if dets_list else []
 
-    # (c) Update tracker with new detections
-    tracks = tracker.update_tracks(dets_list, frame=frame) if len(dets_list) > 0 else []
-
-    # (d) Visualize tracking results on the frame
+    # 🔴 (c) 可视化跟踪结果
     for track in tracks:
         if not track.is_confirmed():
             continue
         track_id = track.track_id
-        x, y, w, h = map(int, track.to_ltwh())  # Bounding box coordinates
+        x, y, w, h = map(int, track.to_ltwh())  # 获取跟踪目标的坐标
+
+        # 绘制目标框
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         label = f"ID: {track_id}"
-        cv2.putText(frame, label, (x, y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    # (e) Write the processed frame to the output video
+    # 🟡 (d) 写入处理后的视频帧
     out.write(frame)
 
-# 7) Release video capture and writer resources
+# 7️⃣ 释放资源
 cap.release()
 out.release()
 cv2.destroyAllWindows()
-
-print("Processing complete. The output video is saved to:", out_path)
+print("🎉 处理完成，视频已保存为 output.mp4")
