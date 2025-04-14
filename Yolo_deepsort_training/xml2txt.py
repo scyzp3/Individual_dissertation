@@ -69,6 +69,6 @@ for xml_file in os.listdir(input_dir):
     with open(txt_file, "w") as f:
         f.write("\n".join(yolo_labels))
 
-# 输出类别信息
+# output classes
 print("Completed, save at:", output_dir)
 print("Class:", classes)
