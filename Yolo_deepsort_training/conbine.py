@@ -1,3 +1,6 @@
+
+"""This script demonstrates how to integrate a pretrained ResNet model as a feature extractor"""
+
 import torch
 from torchvision import models
 from ultralytics import YOLO

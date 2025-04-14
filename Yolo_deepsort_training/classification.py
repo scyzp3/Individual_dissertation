@@ -1,3 +1,6 @@
+
+"""Classification script for the ISS dataset using PyTorch and torchvision."""
+
 from torchvision import datasets, models, transforms
 import torch
 import torch.nn as nn
@@ -28,7 +31,7 @@ dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32, 
 # load model
 model = models.resnet18(pretrained=True)
 num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, len(image_datasets['train'].classes))  # 修改输出层
+model.fc = nn.Linear(num_ftrs, len(image_datasets['train'].classes))  # modify the final layer for the number of classes
 
 # criterion and optimizer
 criterion = nn.CrossEntropyLoss()
