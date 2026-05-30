@@ -1,33 +1,42 @@
 # 面向自动驾驶的目标检测与跟踪系统
 
-本项目构建了一个面向自动驾驶场景的多模态感知系统，结合 LiDAR 检测、视觉目标检测与多目标跟踪，实现基于 SFA3D、YOLO 和 DeepSORT 的目标检测与融合实验。
+本项目基于 CARLA 仿真环境，构建了一个自动驾驶感知实验系统。系统结合相机、LiDAR、YOLO、SFA3D 与 DeepSORT，用于完成二维目标检测、三维目标检测、多目标跟踪以及多传感器融合可视化。
+
+整体流程包括：
+
+- 使用 YOLO 进行二维目标检测，并通过 DeepSORT 进行视频目标跟踪。
+- 使用 SFA3D 对 LiDAR 点云进行三维目标检测。
+- 将相机与 LiDAR 检测结果投影到统一视角，进行匹配、筛选和结果展示。
+- 在 CARLA 中采集仿真数据，并在 KITTI 格式数据上进行离线实验与评估。
 
 ## 系统展示
 
-![系统结构](assets/architecture.png)
+<img src="assets/architecture.png" alt="系统结构" width="440">
 
-<video src="assets/demo.mp4" controls width="720"></video>
+<video src="assets/demo.mp4" controls width="480"></video>
 
-![实验结果 1](assets/eval1.png)
+[查看演示视频 MP4](assets/demo.mp4)
 
-![实验结果 2](assets/eval2.png)
+<img src="assets/eval1.png" alt="实验结果 1" width="440">
+
+<img src="assets/eval2.png" alt="实验结果 2" width="440">
 
 ## 项目结构
 
 ```text
 .
-|-- assets/                  # 图片与演示视频
+|-- assets/                  # 图片和演示视频
 |-- Carla/                   # CARLA 仿真、传感器与融合实验脚本
-|   |-- demos/
-|   |-- pipelines/
-|   |-- tools/
-|   `-- sep/
-`-- Yolo_deepsort_training/  # YOLO/DeepSORT 训练与检测脚本
+|   |-- demos/               # 独立测试脚本
+|   |-- pipelines/           # CARLA 在线运行流程
+|   |-- tools/               # 数据转换与辅助工具
+|   `-- sep/                 # SFA3D 与融合实验入口
+`-- Yolo_deepsort_training/  # YOLO / DeepSORT 训练与检测脚本
 ```
 
 ## 模块说明
 
-- `Carla/`：包含 CARLA 0.9.12 环境下的数据采集、LiDAR/Camera 测试、SFA3D 检测与 YOLO 融合实验。
+- `Carla/`：包含 CARLA 0.9.12 下的数据采集、LiDAR/Camera 测试、SFA3D 检测和 YOLO 融合实验。
 - `Yolo_deepsort_training/`：包含 YOLO 训练、标注格式转换、视频检测和 DeepSORT 跟踪相关脚本。
 - `assets/`：保存系统结构图、实验结果图和演示视频。
 
@@ -35,4 +44,4 @@
 
 - CARLA 相关脚本需要配置 CARLA Python API。
 - SFA3D 实验默认使用 KITTI 格式数据。
-- 训练依赖可参考 `Yolo_deepsort_training/requirements.txt`。
+- YOLO/DeepSORT 训练依赖可参考 `Yolo_deepsort_training/requirements.txt`。
