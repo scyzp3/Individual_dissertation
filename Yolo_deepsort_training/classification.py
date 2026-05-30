@@ -1,12 +1,10 @@
-
-"""Classification script for the ISS dataset using PyTorch and torchvision."""
+"""Train a ResNet classifier on the ISS image dataset."""
 
 from torchvision import datasets, models, transforms
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# preprocessing
 data_transforms = {
     'train': transforms.Compose([
         transforms.Resize((224, 224)),
@@ -21,28 +19,24 @@ data_transforms = {
     ])
 }
 
-# load data
 data_dir = 'ISS-Dataset/2D_and_3D_in_carla/2Ddataset'
 image_datasets = {x: datasets.ImageFolder(root=f"{data_dir}/{x}", transform=data_transforms[x])
                   for x in ['train', 'test']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32, shuffle=True)
                for x in ['train', 'test']}
 
-# load model
+# Replace ResNet's classifier head so it matches the ISS class count.
 model = models.resnet18(pretrained=True)
 num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, len(image_datasets['train'].classes))  # modify the final layer for the number of classes
+model.fc = nn.Linear(num_ftrs, len(image_datasets['train'].classes))
 
-# criterion and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-# device configuration
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
-# training loop
-for epoch in range(10):  # 10 epochs
+for epoch in range(10):
     print(f'Epoch {epoch + 1}/10')
     for phase in ['train', 'test']:
         if phase == 'train':
@@ -56,12 +50,15 @@ for epoch in range(10):  # 10 epochs
         for inputs, labels in dataloaders[phase]:
             inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
+
+            # Only enable gradients during the training phase.
             with torch.set_grad_enabled(phase == 'train'):
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
                 if phase == 'train':
                     loss.backward()
                     optimizer.step()
+
             running_loss += loss.item() * inputs.size(0)
             corrects += torch.sum(torch.argmax(outputs, 1) == labels)
 
@@ -69,5 +66,4 @@ for epoch in range(10):  # 10 epochs
         epoch_acc = corrects.double() / len(image_datasets[phase])
         print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
-# save model
 torch.save(model.state_dict(), 'datasets/classification_model.pth')

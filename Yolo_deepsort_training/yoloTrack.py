@@ -1,3 +1,5 @@
+"""Run YOLO detection on a video and save the annotated output."""
+
 from ultralytics import YOLO
 import cv2
 
@@ -31,7 +33,6 @@ while cap.isOpened():
 
     out.write(frame)
 
-# 释放资源
 cap.release()
 out.release()
 cv2.destroyAllWindows()
