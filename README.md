@@ -13,9 +13,7 @@
 
 <img src="assets/architecture.png" alt="系统结构" width="440">
 
-<video src="assets/demo.mp4" controls width="480"></video>
-
-[查看演示视频 MP4](assets/demo.mp4)
+<img src="assets/demo.gif" alt="演示 GIF" width="480">
 
 <img src="assets/eval1.png" alt="实验结果 1" width="440">
 
